@@ -25,6 +25,7 @@ class PostRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         # fields = ['id', 'title', 'image', 'like', 'category']
+        # exclude 기능을 이용해서 빼는 것만 지정하는 방법도 있다.
         exclude = ['created_at',]
 
 
