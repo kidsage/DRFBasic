@@ -39,6 +39,7 @@ class PostLikeAPIView(UpdateAPIView):
         instance = self.get_object()
         data = {'like' : instance.like + 1}
         # data = instance.like + 1 # dictionary가 아닌 데이터는 에러 발생.
+        
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -49,6 +50,7 @@ class PostLikeAPIView(UpdateAPIView):
             instance._prefetched_objects_cache = {}
 
         # return Response(serializer.data)
+        # return test
         return Response(data['like'])
 
 
