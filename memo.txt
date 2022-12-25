@@ -1,0 +1,7 @@
+- serialize(직렬화)
+    instance -> S(instance=xxx) -> dict -> json -> response
+    * read / GET
+
+- deserialize(역직렬화)
+    json -> dict -> S(data=xxx) -> is_valid(), validated_data -> instance -> save()/create()/update()
+    * write / POST, UPDATE, DELETE, PATCH
