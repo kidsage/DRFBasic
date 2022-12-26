@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 # from api.views import UserViewSet, PostViewSet, CommentViewSet
-from api.views import PostListAPIView, PostRetrieveAPIView, CommentCreateAPIView, PostLikeAPIView
+from api.views import PostListAPIView, PostRetrieveAPIView, CommentCreateAPIView, PostLikeAPIView, CateTagAPIView
 
 
 # router = routers.DefaultRouter()
@@ -18,5 +18,6 @@ urlpatterns = [
     path('post/', PostListAPIView.as_view(), name='post-list'),
     path('post/<int:pk>/', PostRetrieveAPIView.as_view(), name='post-detail'),
     path('post/<int:pk>/like/', PostLikeAPIView.as_view(), name='post-like'),
-    path('comment/', CommentCreateAPIView.as_view(), name='comment-create')
+    path('comment/', CommentCreateAPIView.as_view(), name='comment-create'),
+    path('catetag/', CateTagAPIView.as_view(), name='catetag')
 ]

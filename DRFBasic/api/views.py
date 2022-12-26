@@ -2,8 +2,9 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView, UpdateAPIView
-from api.serializers import UserSerializer, PostSerializer, CommentSerializer, PostListSerializer, PostRetrieveSerializer, PostLikeSerializer
-from blog.models import Post, Comment
+from rest_framework.views import APIView
+from api.serializers import *
+from blog.models import Post, Comment, Category, Tag
 
 # class UserViewSet(viewsets.ModelViewSet):
 #     queryset = User.objects.all()
@@ -57,3 +58,17 @@ class PostLikeAPIView(UpdateAPIView):
 class CommentCreateAPIView(CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+
+class CateTagAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        cateList = Category.objects.all()
+        tagList = Tag.objects.all()
+        
+        data = {
+            'cateList': cateList,
+            'tagList': tagList,
+        }
+
+        serializer = CateTagSerializer(instance=data)
+        return Response(serializer.data)
