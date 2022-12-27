@@ -29,10 +29,10 @@ class PostRetrieveSerializer(serializers.ModelSerializer):
         exclude = ['created_at',]
 
 
-class PostLikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['like']
+# class PostLikeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Post
+#         fields = ['like']
 
 
 class CommentSerializer(serializers.ModelSerializer):
