@@ -1,8 +1,10 @@
+from collections import OrderedDict
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView, UpdateAPIView, GenericAPIView
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from api.serializers import *
 from blog.models import Post, Comment, Category, Tag
 
@@ -21,9 +23,22 @@ from blog.models import Post, Comment, Category, Tag
 #     serializer_class = CommentSerializer
 
 
+class PostPageNumberPagination(PageNumberPagination):
+    page_size = 5
+    # page_size_query_param = 'page_size'
+    # max_page_size = 1000
+    def get_paginated_response(self, data):
+        return Response(OrderedDict([
+            ('postList', data),
+            ('pageCnt', self.page.paginator.num_pages),
+            ('curPage', self.page.number),
+        ]))
+
+
 class PostListAPIView(ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
+    pagination_class = PostPageNumberPagination
 
 
 class PostRetrieveAPIView(RetrieveAPIView):
@@ -55,7 +70,7 @@ class PostRetrieveAPIView(RetrieveAPIView):
 #         return Response(data['like'])
 
 
-class PostLikeAPIView(GenericAPIView):
+class PostLikeAPIView(GenericAPIView): # APIView를 이용해서 하는 방법도 있음
     queryset = Post.objects.all()
     # serializer_class = PostLikeSerializer # 굳이 사용할 이유가 없어짐.
 
@@ -84,3 +99,5 @@ class CateTagAPIView(APIView):
 
         serializer = CateTagSerializer(instance=data)
         return Response(serializer.data)
+
+
