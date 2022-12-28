@@ -40,6 +40,18 @@ class PostListAPIView(ListAPIView):
     serializer_class = PostListSerializer
     pagination_class = PostPageNumberPagination
 
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            # image url을 경로만 나오게 하기 위해 오버라이딩 하고 request를 None값을 줌.
+            # 해당 requestsms generics > fields.py > ImageField > FileField > def to_representation에서 처리됨.
+            'request': None, 
+            'format': self.format_kwarg,
+            'view': self
+        }
+
 
 class PostRetrieveAPIView(RetrieveAPIView):
     queryset = Post.objects.all()
