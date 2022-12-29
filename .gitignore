@@ -3,7 +3,7 @@
 *.pot
 *.pyc
 __pycache__
-db.sqlite3
+DRFBasic/db.sqlite3
 
 # Backup files # 
 *.bak 
@@ -136,7 +136,6 @@ GitHub.sublime-settings
 .history
 
 # Custom
-.gitmessage.txt
-media/
-static/
-secret.json
+DRFBasic/.gitmessage.txt
+DRFBasic/media
+DRFBasic/static
