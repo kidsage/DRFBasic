@@ -53,9 +53,9 @@ class PostListAPIView(ListAPIView):
         }
 
 
-class PostRetrieveAPIView(RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostRetrieveSerializer
+# class PostRetrieveAPIView(RetrieveAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostRetrieveSerializer
 
 
 # class PostLikeAPIView(UpdateAPIView):
@@ -113,3 +113,36 @@ class CateTagAPIView(APIView):
         return Response(serializer.data)
 
 
+def get_prev_next(instance):
+    try:
+        prev = instance.get_previous_by_updated_at()
+    except instance.DoesNotExist:
+        prev = None
+
+    try:
+        next_ = instance.get_next_by_updated_at()
+    except instance.DoesNotExist:
+        next_ = None
+
+    return prev, next_
+
+
+
+class PostRetrieveAPIView(RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostDetailSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        prevInstance, nextInstance = get_prev_next(instance)
+        commentList = instance.comment_set.all()
+
+        data = {
+            'post': instance,
+            'prevPost': prevInstance,
+            'nextPost': nextInstance,
+            'comment': commentList,
+        }
+        
+        serializer = self.get_serializer(instance=data)
+        return Response(serializer.data)

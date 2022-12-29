@@ -32,6 +32,25 @@ class PostRetrieveSerializer(serializers.ModelSerializer):
         exclude = ['created_at',]
 
 
+class PostSubSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title']
+
+
+class CommentSubSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'updated_at']
+
+
+class PostDetailSerializer(serializers.Serializer):
+    post = PostRetrieveSerializer()
+    prevPost = PostSubSerializer()
+    nextPost = PostSubSerializer()
+    commentList = CommentSubSerializer(many=True, default=None)
+
+
 # class PostLikeSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Post
