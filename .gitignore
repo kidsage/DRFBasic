@@ -136,7 +136,7 @@ GitHub.sublime-settings
 .history
 
 # Custom
-.gitmessage.txt
-media
-static
+media/
+static/
 memo.txt
+DRFBasic/DRFBasic/media/
