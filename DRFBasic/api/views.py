@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from api.serializers import *
 from blog.models import Post, Comment, Category, Tag
+from .utils import *
 
 # class UserViewSet(viewsets.ModelViewSet):
 #     queryset = User.objects.all()
@@ -127,34 +128,61 @@ def get_prev_next(instance):
     return prev, next_
 
 
+# serializer를 사용해서 post detail을 보여주는 view
+# class PostRetrieveAPIView(RetrieveAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostDetailSerializer
 
+#     def retrieve(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         prevInstance, nextInstance = get_prev_next(instance)
+#         commentList = instance.comment_set.all()
+
+#         data = {
+#             'post': instance,
+#             'prevPost': prevInstance,
+#             'nextPost': nextInstance,
+#             'comment': commentList,
+#         }
+
+#         serializer = self.get_serializer(instance=data)
+#         return Response(serializer.data)
+
+#     def get_serializer_context(self):
+#         """
+#         Extra context provided to the serializer class.
+#         """
+#         return {
+#             # image url을 경로만 나오게 하기 위해 오버라이딩 하고 request를 None값을 줌.
+#             # 해당 requestsms generics > fields.py > ImageField > FileField > def to_representation에서 처리됨.
+#             'request': None, 
+#             'format': self.format_kwarg,
+#             'view': self
+#         }
+
+
+# 위와 같은 기능을 하지만 serializer를 사용하지 않고 만든 view
 class PostRetrieveAPIView(RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostDetailSerializer
+    # queryset = Post.objects.all()
+    # serializer_class = PostDetailSerializer
+
+    def get_queryset(self):
+        return Post.objects.all().select_related('category').prefetch_related('tags', 'comment_set')
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        prevInstance, nextInstance = get_prev_next(instance)
+        # prevInstance, nextInstance = get_prev_next(instance)
         commentList = instance.comment_set.all()
 
-        data = {
-            'post': instance,
-            'prevPost': prevInstance,
-            'nextPost': nextInstance,
-            'comment': commentList,
+        postDict = obj_to_post(instance)
+        prevDict, nextDict = prev_next_post(instance)
+        commentDict = [obj_to_comment(c) for c in commentList]
+
+        dataDict = {
+            'post': postDict,
+            'prevPost': prevDict,
+            'nextPost': nextDict,
+            'comment': commentDict,
         }
 
-        serializer = self.get_serializer(instance=data)
-        return Response(serializer.data)
-
-    def get_serializer_context(self):
-        """
-        Extra context provided to the serializer class.
-        """
-        return {
-            # image url을 경로만 나오게 하기 위해 오버라이딩 하고 request를 None값을 줌.
-            # 해당 requestsms generics > fields.py > ImageField > FileField > def to_representation에서 처리됨.
-            'request': None, 
-            'format': self.format_kwarg,
-            'view': self
-        }
+        return Response(dataDict)
