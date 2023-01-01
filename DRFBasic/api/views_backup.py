@@ -24,6 +24,36 @@ from .utils import *
 #     serializer_class = CommentSerializer
 
 
+class PostPageNumberPagination(PageNumberPagination):
+    page_size = 5
+    # page_size_query_param = 'page_size'
+    # max_page_size = 1000
+    def get_paginated_response(self, data):
+        return Response(OrderedDict([
+            ('postList', data),
+            ('pageCnt', self.page.paginator.num_pages),
+            ('curPage', self.page.number),
+        ]))
+
+
+class PostListAPIView(ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostListSerializer
+    pagination_class = PostPageNumberPagination
+
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            # image url을 경로만 나오게 하기 위해 오버라이딩 하고 request를 None값을 줌.
+            # 해당 requestsms generics > fields.py > ImageField > FileField > def to_representation에서 처리됨.
+            'request': None, 
+            'format': self.format_kwarg,
+            'view': self
+        }
+
+
 # class PostRetrieveAPIView(RetrieveAPIView):
 #     queryset = Post.objects.all()
 #     serializer_class = PostRetrieveSerializer
@@ -51,6 +81,51 @@ from .utils import *
 #         # return Response(serializer.data)
 #         # return test
 #         return Response(data['like'])
+
+
+class PostLikeAPIView(GenericAPIView): # APIView를 이용해서 하는 방법도 있음
+    queryset = Post.objects.all()
+    # serializer_class = PostLikeSerializer # 굳이 사용할 이유가 없어짐.
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.like += 1
+        instance.save()
+
+        return Response(instance.like)
+
+
+class CommentCreateAPIView(CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+class CateTagAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        cateList = Category.objects.all()
+        tagList = Tag.objects.all()
+
+        data = {
+            'cateList': cateList,
+            'tagList': tagList,
+        }
+
+        serializer = CateTagSerializer(instance=data)
+        return Response(serializer.data)
+
+
+def get_prev_next(instance):
+    try:
+        prev = instance.get_previous_by_updated_at()
+    except instance.DoesNotExist:
+        prev = None
+
+    try:
+        next_ = instance.get_next_by_updated_at()
+    except instance.DoesNotExist:
+        next_ = None
+
+    return prev, next_
 
 
 # serializer를 사용해서 post detail을 보여주는 view
@@ -86,38 +161,17 @@ from .utils import *
 #         }
 
 
-class PostPageNumberPagination(PageNumberPagination):
-    page_size = 5
-    # page_size_query_param = 'page_size'
-    # max_page_size = 1000
-    def get_paginated_response(self, data):
-        return Response(OrderedDict([
-            ('postList', data),
-            ('pageCnt', self.page.paginator.num_pages),
-            ('curPage', self.page.number),
-        ]))
-
-
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostListSerializer
-    pagination_class = PostPageNumberPagination
-
-    def get_serializer_context(self):
-        """
-        Extra context provided to the serializer class.
-        """
-        return {
-            'request': None, 
-            'format': self.format_kwarg,
-            'view': self
-        }
+# 위와 같은 기능을 하지만 serializer를 사용하지 않고 만든 view
+class PostRetrieveAPIView(RetrieveAPIView):
+    # queryset = Post.objects.all()
+    # serializer_class = PostDetailSerializer
 
     def get_queryset(self):
         return Post.objects.all().select_related('category').prefetch_related('tags', 'comment_set')
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        # prevInstance, nextInstance = get_prev_next(instance)
         commentList = instance.comment_set.all()
 
         postDict = obj_to_post(instance)
@@ -132,30 +186,3 @@ class PostViewSet(viewsets.ModelViewSet):
         }
 
         return Response(dataDict)
-
-    # viewset에서 get method는 사용하지 않는다.
-    def like(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.like += 1
-        instance.save()
-
-        return Response(instance.like)
-
-
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-
-class CateTagAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        cateList = Category.objects.all()
-        tagList = Tag.objects.all()
-
-        data = {
-            'cateList': cateList,
-            'tagList': tagList,
-        }
-
-        serializer = CateTagSerializer(instance=data)
-        return Response(serializer.data)
