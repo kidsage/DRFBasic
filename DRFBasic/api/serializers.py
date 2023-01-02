@@ -17,6 +17,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostListSerializer(serializers.ModelSerializer):
     # source를 가져올 때 해당 데이터가 null값만 있는 경우는 default를 지정해줘야 에러가 나지 않는다.
+    # title = serializers.CharField(default=None)
     category = serializers.CharField(source='category.name', default=None)
 
     class Meta:
@@ -26,7 +27,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
 class PostRetrieveSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
-    tags = serializers.StringRelatedField(many=True)
+    tags = serializers.StringRelatedField(many=True, default=None)
 
     class Meta:
         model = Post
